@@ -1,0 +1,20 @@
+field,data_type,description
+employee_id,object,Synthetic identifier; exclude from modeling.
+department,object,Fictional organizational department.
+job_level,object,Fictional career level.
+employment_type,object,Fictional employment arrangement.
+work_mode,object,Fictional work arrangement.
+age,int64,Synthetic employee age.
+tenure_years,float64,Years employed.
+annual_salary_usd,int64,Synthetic annual salary.
+workload_score,float64,"Perceived workload, 1–10."
+overtime_hours_month,float64,Average monthly overtime.
+manager_support_score,float64,"Manager support, 1–10."
+promotion_wait_years,float64,Synthetic measure of time awaiting meaningful progression.
+promotion_count,int64,Synthetic promotion count.
+training_hours_year,float64,Annual training hours.
+satisfaction_score,float64,"Employee satisfaction, 1–10."
+engagement_score,float64,"Employee engagement, 1–10."
+performance_score,float64,"Performance, 1–10."
+absenteeism_days_year,float64,Annual absenteeism days.
+attrition,int64,"Target: 1 left, 0 stayed."
