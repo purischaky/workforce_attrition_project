@@ -75,9 +75,9 @@ workforce_attrition_project/
 │   ├── retention_optimizer.py # Constrained budget ROI optimization algorithm
 │   └── dashboard.py        # Streamlit executive decision support application
 ├── tests/                  # Automated pytest test suite
-│   ├── test_features.py
-│   ├── test_models.py
-│   └── test_optimizer.py
+│   ├── test_features.py    # Feature transformer edge cases (zero-division guards)
+│   ├── test_pipeline.py    # Data leakage isolation & output shape invariants
+│   └── test_models.py      # Checks for model training and calibration
 ├── .gitignore
 ├── main.py                 # End-to-end execution pipeline orchestrator
 ├── requirements.txt        # Python package dependencies
