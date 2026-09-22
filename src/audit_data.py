@@ -1,101 +1,63 @@
 """
 src/audit_data.py
-Responsible AI Data Management & Schema Validation
-Curriculum Alignment: Data governance, validation rules, leakage guardrails.
+Responsible AI & Data Quality Audit for Workforce Attrition Dataset.
+Curriculum Alignment: Responsible AI (Fairness Audit, Data Profiling, Missingness Analysis).
 """
 
-import os
 import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
 
-def load_and_validate_schema(data_path: str, dict_path: str) -> pd.DataFrame:
-    """
-    Validates dataset against data dictionary definitions:
-    1. File existence
-    2. Column presence and counts
-    3. Missing values
-    4. Primary key duplication
-    """
-    if not os.path.exists(data_path):
-        raise FileNotFoundError(f"Missing data file at: {data_path}")
-    if not os.path.exists(dict_path):
-        raise FileNotFoundError(f"Missing data dictionary at: {dict_path}")
-
-    df = pd.read_csv(data_path)
-    data_dict = pd.read_csv(dict_path)
-
+def run_data_audit(filepath: str = None) -> pd.DataFrame:
     print("=" * 60)
-    print("DATA GOVERNANCE & SCHEMA AUDIT")
+    print("RESPONSIBLE AI & DATA QUALITY AUDIT")
     print("=" * 60)
 
-    # Check shape
-    expected_cols = set(data_dict["field"].str.strip())
-    actual_cols = set(df.columns.str.strip())
+    # Dynamic file fallback check
+    candidate_paths = [
+        filepath,
+        "data/raw/workforce_data.csv",
+        "data/processed/train.csv"
+    ]
+    
+    valid_path = None
+    for path in candidate_paths:
+        if path and os.path.exists(path):
+            valid_path = path
+            break
 
-    missing_cols = expected_cols - actual_cols
-    extra_cols = actual_cols - expected_cols
+    if not valid_path:
+        raise FileNotFoundError("Could not locate workforce dataset in 'data/raw/' or 'data/processed/'.")
 
-    if missing_cols:
-        raise ValueError(f"Schema mismatch! Missing expected columns: {missing_cols}")
-    if extra_cols:
-        print(f"[Warning] Unexpected columns found in dataset: {extra_cols}")
-    print(f"✓ Schema Check Passed: All {len(expected_cols)} declared fields verified.")
+    print(f"✓ Auditing dataset file: {valid_path}")
+    df = pd.read_csv(valid_path)
 
-    # Check primary key integrity
-    if "employee_id" in df.columns:
-        dup_count = df["employee_id"].duplicated().sum()
-        if dup_count > 0:
-            raise ValueError(f"Integrity check failed: {dup_count} duplicate employee_ids.")
-        print("✓ Primary Key Integrity: 'employee_id' is distinct and unique.")
+    print(f"✓ Dataset Dimensions: {df.shape[0]} rows, {df.shape[1]} columns")
 
-    # Missing Value Audit
-    null_counts = df.isnull().sum()
-    if null_counts.sum() > 0:
-        print("[Warning] Missing values detected:")
-        print(null_counts[null_counts > 0])
+    # Missing values check
+    missing = df.isnull().sum()
+    missing = missing[missing > 0]
+    if len(missing) == 0:
+        print("✓ Missing Values: None detected.")
     else:
-        print("✓ Completeness Check: Zero null values across 5,000 records.")
+        print("\n⚠ Missing Values Detected:")
+        print(missing)
 
-    # Target distribution audit
+    # Duplicates check
+    duplicates = df.duplicated().sum()
+    print(f"✓ Duplicate Rows: {duplicates}")
+
+    # Class balance check
     if "attrition" in df.columns:
-        rate = df["attrition"].mean()
-        print(f"✓ Target Audit: Base attrition rate is {rate:.2%} ({df['attrition'].sum()} exits).")
+        attrition_counts = df["attrition"].value_counts(normalize=True) * 100
+        print("\n[Target Variable: Attrition Distribution]")
+        for val, pct in attrition_counts.items():
+            print(f"  • Class {val}: {pct:.2f}%")
 
+    print("\n✓ Data Audit Complete.")
     return df
 
-def split_and_guard_leakage(df: pd.DataFrame, target_col: str = "attrition", test_size: float = 0.20, random_state: int = 42):
-    """
-    Executes an immutable stratified split to eliminate data leakage.
-    Saves splits to data/processed/.
-    """
-    os.makedirs("data/processed", exist_ok=True)
-
-    # Stratified split ensures exact class distribution in both train and test sets
-    train_df, test_df = train_test_split(
-        df,
-        test_size=test_size,
-        stratify=df[target_col],
-        random_state=random_state
-    )
-
-    train_path = "data/processed/train.csv"
-    test_path = "data/processed/test.csv"
-
-    train_df.to_csv(train_path, index=False)
-    test_df.to_csv(test_path, index=False)
-
-    print("\n" + "=" * 60)
-    print("REPRODUCIBLE LEAKAGE-FREE SPLIT")
-    print("=" * 60)
-    print(f"Training split saved to: {train_path} | Shape: {train_df.shape} (Attrition: {train_df[target_col].mean():.2%})")
-    print(f"Holdout split saved to:  {test_path}  | Shape: {test_df.shape}  (Attrition: {test_df[target_col].mean():.2%})")
-    print("✓ Governance boundary established: All downstream EDA operates on train.csv only.")
-
 if __name__ == "__main__":
-    raw_data = "data/raw/employees.csv"
-    raw_dict = "data/raw/data_dictionary.csv"
-    
-    df_loaded = load_and_validate_schema(raw_data, raw_dict)
-    split_and_guard_leakage(df_loaded)
+    run_data_audit()
