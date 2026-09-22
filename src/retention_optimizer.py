@@ -9,7 +9,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import pandas as pd
 import numpy as np
-from src.models import train_and_evaluate
+from src.models import load_trained_artifacts
 
 def optimize_retention_budget(total_budget: float = 50000.0, intervention_cost: float = 2500.0, success_rate: float = 0.40):
     print("\n" + "=" * 60)
@@ -18,7 +18,8 @@ def optimize_retention_budget(total_budget: float = 50000.0, intervention_cost: 
 
     # Load test data and calibrated predictions
     test_df = pd.read_csv("data/processed/test.csv")
-    pipeline, calibrated_hgb, _, _, X_test_proc, _ = train_and_evaluate()
+    pipeline, calibrated_hgb, _, _ = load_trained_artifacts()
+    X_test_proc = pipeline.transform(test_df)
 
     test_df["predicted_attrition_prob"] = calibrated_hgb.predict_proba(X_test_proc)[:, 1]
 
