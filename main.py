@@ -12,6 +12,7 @@ from src.models import train_and_evaluate
 from src.explainability import generate_shap_insights
 from src.segmentation import run_segmentation
 from src.retention_optimizer import optimize_retention_budget
+from src.eda_economic import run_econometric_eda
 
 def run_full_pipeline():
     print("=" * 80)
@@ -19,23 +20,27 @@ def run_full_pipeline():
     print("=" * 80)
 
     # Data Audit & Validation
-    print("\n[STEP 1/5] Running Responsible AI Data Audit...")
-    run_data_audit("data/raw/workforce_data.csv")
+    print("\n[STEP 1/6] Running Responsible AI Data Audit...")
+    run_data_audit("data/raw/employees.csv")
+
+    # Econometric Hypothesis Testing
+    print("\n[STEP 2/6] Running Econometric EDA & Hypothesis Testing...")
+    run_econometric_eda()
 
     # Dual Model Calibration & Evaluation
-    print("\n[STEP 2/5] Fitting Models & Calibrating Probabilities...")
+    print("\n[STEP 3/6] Fitting Models & Calibrating Probabilities...")
     train_and_evaluate()
 
     # Explainable AI & SHAP Attributions
-    print("\n[STEP 3/5] Computing Global & Local SHAP Values...")
+    print("\n[STEP 4/6] Computing Global & Local SHAP Values...")
     generate_shap_insights()
 
     # Latent Clustering
-    print("\n[STEP 4/5] Executing PCA & K-Means Clustering...")
+    print("\n[STEP 5/6] Executing PCA & K-Means Clustering...")
     run_segmentation()
 
     # Constrained Retention ROI Optimization
-    print("\n[STEP 5/5] Optimizing Retention Budget Allocation...")
+    print("\n[STEP 6/6] Optimizing Retention Budget Allocation...")
     optimize_retention_budget(total_budget=50000.0, intervention_cost=2500.0, success_rate=0.40)
 
     print("\n" + "=" * 80)

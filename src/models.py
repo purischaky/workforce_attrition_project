@@ -7,7 +7,7 @@ Curriculum Alignment: Logistic Regression, Odds Ratios, ROC Curves, Hyperparamet
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+import joblib
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
@@ -92,8 +92,34 @@ def train_and_evaluate():
     print(f"  • Logistic Regression  | ROC-AUC: {lr_auc:.4f} | Brier Score: {lr_brier:.4f}")
     print(f"  • Calibrated LightGBM  | ROC-AUC: {hgb_auc:.4f} | Brier Score: {hgb_brier:.4f}")
     print("✓ Model training and probability calibration complete.")
+    
+    # Persist trained artifacts so downstream steps don't need to retrain
+    os.makedirs("models", exist_ok=True)
+    joblib.dump(pipeline, "models/preprocessor_pipeline.joblib")
+    joblib.dump(calibrated_hgb, "models/calibrated_hgb.joblib")
+    joblib.dump(hgb_raw, "models/hgb_raw.joblib")
+    joblib.dump(feature_names, "models/feature_names.joblib")
+    print("✓ Trained artifacts saved to models/")
 
     return pipeline, calibrated_hgb, hgb_raw, X_train_proc, X_test_proc, feature_names
+
+def load_trained_artifacts():
+    """Loads previously trained artifacts from disk. Raises if not yet trained."""
+    required = [
+        "models/preprocessor_pipeline.joblib",
+        "models/calibrated_hgb.joblib",
+        "models/hgb_raw.joblib",
+        "models/feature_names.joblib",
+    ]
+    if not all(os.path.exists(p) for p in required):
+        raise FileNotFoundError(
+            "No trained artifacts found in models/. Run `python src/models.py` first."
+        )
+    pipeline = joblib.load("models/preprocessor_pipeline.joblib")
+    calibrated_hgb = joblib.load("models/calibrated_hgb.joblib")
+    hgb_raw = joblib.load("models/hgb_raw.joblib")
+    feature_names = joblib.load("models/feature_names.joblib")
+    return pipeline, calibrated_hgb, hgb_raw, feature_names
 
 if __name__ == "__main__":
     train_and_evaluate()

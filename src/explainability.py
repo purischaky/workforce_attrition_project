@@ -11,15 +11,18 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import shap
-from src.models import train_and_evaluate
+from src.models import load_trained_artifacts
 
 
 def generate_shap_insights(reports_dir: str = "reports"):
     os.makedirs(reports_dir, exist_ok=True)
 
-    # Train models and extract processed arrays + raw tree model
-    pipeline, calibrated_model, raw_tree_model, X_train_proc, X_test_proc, feature_names = train_and_evaluate()
+    # Load previously trained models instead of retraining
+    pipeline, calibrated_model, raw_tree_model, feature_names = load_trained_artifacts()
 
+    test_df = pd.read_csv("data/processed/test.csv")
+    X_test_proc = pipeline.transform(test_df)
+    
     print("\n" + "=" * 60)
     print("EXPLAINABLE AI & SHAP FEATURE ATTRIBUTION")
     print("=" * 60)
