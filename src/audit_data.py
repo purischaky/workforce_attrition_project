@@ -31,7 +31,11 @@ def run_data_audit(filepath: str = None) -> pd.DataFrame:
     if not valid_path:
         raise FileNotFoundError("Could not locate workforce dataset in 'data/raw/' or 'data/processed/'.")
 
+    if filepath and valid_path != filepath:
+        print(f"⚠ WARNING: requested file '{filepath}' not found. Falling back to: {valid_path}")
+
     print(f"✓ Auditing dataset file: {valid_path}")
+    
     df = pd.read_csv(valid_path)
 
     print(f"✓ Dataset Dimensions: {df.shape[0]} rows, {df.shape[1]} columns")

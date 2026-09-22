@@ -20,7 +20,7 @@ def run_full_pipeline():
 
     # Data Audit & Validation
     print("\n[STEP 1/5] Running Responsible AI Data Audit...")
-    run_data_audit("data/raw/workforce_data.csv")
+    run_data_audit("data/raw/employees.csv")
 
     # Dual Model Calibration & Evaluation
     print("\n[STEP 2/5] Fitting Models & Calibrating Probabilities...")
